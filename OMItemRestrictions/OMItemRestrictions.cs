@@ -4,6 +4,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using OMItemRestrictions.Models;
 using OMItemRestrictions.Services;
+using OpenMod.API.Permissions;
 using OpenMod.API.Persistence;
 using OpenMod.API.Plugins;
 using OpenMod.Core.Plugins;
@@ -25,6 +26,7 @@ namespace OMItemRestrictions
         private readonly IDataStore _DataStore;
         private const string DataKey = "itemBlacklist";
         private readonly IBlacklistManager _blacklistManager;
+        private readonly IPermissionRegistry _permissionRegistry;
 
         public OMItemRestrictions(
             IConfiguration configuration,
@@ -32,13 +34,15 @@ namespace OMItemRestrictions
             ILogger<OMItemRestrictions> logger,
             IServiceProvider serviceProvider,
             IDataStore dataStore,
-            IBlacklistManager blacklistManager) : base(serviceProvider)
+            IBlacklistManager blacklistManager,
+            IPermissionRegistry permissionRegistry) : base(serviceProvider)
         {
             _Configuration = configuration;
             _StringLocalizer = stringLocalizer;
             _Logger = logger;
             _DataStore = dataStore;
             _blacklistManager = blacklistManager;
+            _permissionRegistry = permissionRegistry;
         }
 
         protected override async Task OnLoadAsync()
@@ -52,7 +56,15 @@ namespace OMItemRestrictions
                     Blacklist = new Dictionary<string, List<int>>()
                 });
             }
-            _blacklistManager.LoadBlacklistToMemory();
+            else
+            {
+                _blacklistManager.LoadBlacklistToMemory();
+                foreach (var item in (await _DataStore.LoadAsync<BlacklistData>(DataKey)).Blacklist) 
+                {
+                    _Logger.LogInformation($"Added {item.Key} to the permission groups.");
+                    _permissionRegistry.RegisterPermission(this, $"blacklist.group.{item.Key}", $"Permission to the {item.Key} blacklist group");
+                }
+            }
         }
 
         protected override async Task OnUnloadAsync()

@@ -1,10 +1,17 @@
-﻿using OMItemRestrictions.Managers;
+﻿using Microsoft.Extensions.Logging;
+using OMItemRestrictions.Managers;
 using OMItemRestrictions.Models;
 using OMItemRestrictions.Services;
+using OpenMod.API.Commands;
 using OpenMod.API.Eventing;
+using OpenMod.API.Permissions;
 using OpenMod.API.Persistence;
+using OpenMod.API.Users;
+using OpenMod.Core.Users;
 using OpenMod.Unturned.Items;
+using OpenMod.Unturned.Players;
 using OpenMod.Unturned.Players.Inventory.Events;
+using OpenMod.Unturned.Users;
 using SDG.Unturned;
 using System;
 using System.Collections.Generic;
@@ -16,20 +23,35 @@ namespace OMItemRestrictions.Events
 {
     public class ItemAdded : IEventListener<UnturnedPlayerTakingItemEvent>
     {
-        private readonly IDataStore _DataStore;
-        private const string DataKey = "itemBlacklist";
         private readonly IBlacklistManager _blacklistManager;
-        public ItemAdded(IDataStore dataStore, IBlacklistManager blacklistManager)
+        private readonly IPermissionChecker _permissionChecker;
+        private readonly IUserManager _userManager;
+        private readonly ILogger<OMItemRestrictions> _Logger;
+        public ItemAdded(
+            IBlacklistManager blacklistManager,
+            IPermissionChecker permissionChecker,
+            IUserManager userManager,
+            ILogger<OMItemRestrictions> logger)
         {
-            _DataStore = dataStore;
             _blacklistManager = blacklistManager;
+            _permissionChecker = permissionChecker;
+            _userManager = userManager;
+            _Logger = logger;
         }
         public async Task HandleEventAsync(object sender, UnturnedPlayerTakingItemEvent @event)
         {
-            var blacklist = await _DataStore.LoadAsync<BlacklistData>(DataKey);
             var pickupItem = @event.ItemData.item;
+            var user = await _userManager.FindUserAsync(KnownActorTypes.Player, @event.Player.SteamId.ToString(), UserSearchMode.FindById);
 
-            if (_blacklistManager.IsItemBlacklisted(pickupItem.id))
+            if (!_blacklistManager.IsItemBlacklisted(pickupItem.id, out var group))
+            {
+                return;
+            }
+
+            _Logger.LogDebug(group);
+            _Logger.LogDebug(_permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}").Result.ToString());
+
+            if (await _permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}") != PermissionGrantResult.Grant)
             {
                 @event.IsCancelled = true;
                 await @event.Player.PrintMessageAsync("This item is blacklisted", Color.Red);

@@ -1,6 +1,7 @@
 ﻿using OMItemRestrictions.Models;
 using OMItemRestrictions.Services;
 using OpenMod.API.Commands;
+using OpenMod.API.Permissions;
 using OpenMod.API.Persistence;
 using OpenMod.Core.Commands;
 using OpenMod.Unturned.Users;
@@ -17,9 +18,14 @@ namespace OMItemRestrictions.Commands
     public class BlacklistCommand : Command
     {
         private readonly IBlacklistManager _blacklistManager;
-        public BlacklistCommand(IServiceProvider serviceProvider, IBlacklistManager blacklistManager) : base(serviceProvider)
+        private readonly IPermissionChecker _permissionChecker;
+        public BlacklistCommand(
+            IServiceProvider serviceProvider, 
+            IBlacklistManager blacklistManager, 
+            IPermissionChecker permissionChecker) : base(serviceProvider)
         {
             _blacklistManager = blacklistManager;
+            _permissionChecker = permissionChecker;
         }
 
         protected override async Task OnExecuteAsync()

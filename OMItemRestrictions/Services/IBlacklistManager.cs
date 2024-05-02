@@ -11,6 +11,6 @@ namespace OMItemRestrictions.Services
         public void AddBlacklist(string group, int item);
         public void RemoveBlacklist(string group, int item);
         public void LoadBlacklistToMemory();
-        public bool IsItemBlacklisted(int item);
+        public bool IsItemBlacklisted(int item, out string group);
     }
 }

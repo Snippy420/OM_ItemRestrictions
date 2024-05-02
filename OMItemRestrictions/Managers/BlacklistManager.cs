@@ -66,18 +66,19 @@ namespace OMItemRestrictions.Managers
             LoadBlacklistToMemory();
         }
 
-        public bool IsItemBlacklisted(int item)
+        public bool IsItemBlacklisted(int item, out string group)
         {
             foreach ( var dicts in _Blacklist )
             {
-                var group = dicts.Key;
                 var list = dicts.Value;
 
                 if (list.Contains(item))
                 {
+                    group = dicts.Key;
                     return true;
                 }
             }
+            group = null;
             return false;
         }
 
