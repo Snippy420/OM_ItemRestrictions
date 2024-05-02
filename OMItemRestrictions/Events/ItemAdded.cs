@@ -54,7 +54,7 @@ namespace OMItemRestrictions.Events
             if (await _permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}") != PermissionGrantResult.Grant)
             {
                 @event.IsCancelled = true;
-                await @event.Player.PrintMessageAsync("This item is blacklisted", Color.Red);
+                await @event.Player.PrintMessageAsync($"This item is blacklisted to group {group}", Color.Red);
                 return;
             }
         }
