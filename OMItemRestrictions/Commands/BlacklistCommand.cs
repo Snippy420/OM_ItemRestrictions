@@ -35,7 +35,7 @@ namespace OMItemRestrictions.Commands
             var group = await Context.Parameters.GetAsync<string>(0);
             var item = await Context.Parameters.GetAsync<int>(1);
 
-            _blacklistManager.AddBlacklist(group, item);
+            _blacklistManager.AddBlacklist(group.ToUpper(), item);
         }
     }
 }

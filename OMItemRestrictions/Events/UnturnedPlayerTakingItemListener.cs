@@ -21,13 +21,13 @@ using System.Threading.Tasks;
 
 namespace OMItemRestrictions.Events
 {
-    public class ItemAdded : IEventListener<UnturnedPlayerTakingItemEvent>
+    public class UnturnedPlayerTakingItemListener : IEventListener<UnturnedPlayerTakingItemEvent>
     {
         private readonly IBlacklistManager _blacklistManager;
         private readonly IPermissionChecker _permissionChecker;
         private readonly IUserManager _userManager;
         private readonly ILogger<OMItemRestrictions> _Logger;
-        public ItemAdded(
+        public UnturnedPlayerTakingItemListener(
             IBlacklistManager blacklistManager,
             IPermissionChecker permissionChecker,
             IUserManager userManager,

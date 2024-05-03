@@ -29,6 +29,7 @@ namespace OMItemRestrictions.Managers
         {
             var blacklist = await _DataStore.LoadAsync<BlacklistData>(DataKey);
             List<int> list;
+            group = group.ToUpper();
 
             if (blacklist.Blacklist.ContainsKey(group))
             {
@@ -49,6 +50,7 @@ namespace OMItemRestrictions.Managers
         public async void RemoveBlacklist(string group, int item)
         {
             var blacklist = await _DataStore.LoadAsync<BlacklistData>(DataKey);
+            group = group.ToUpper();
 
             if (!blacklist.Blacklist.ContainsKey(group))
             {
@@ -74,7 +76,7 @@ namespace OMItemRestrictions.Managers
 
                 if (list.Contains(item))
                 {
-                    group = dicts.Key;
+                    group = dicts.Key.ToUpper();
                     return true;
                 }
             }
