@@ -59,7 +59,7 @@ namespace OMItemRestrictions
             else
             {
                 _blacklistManager.LoadBlacklistToMemory();
-                foreach (var item in (await _DataStore.LoadAsync<BlacklistData>(DataKey)).Blacklist) 
+                foreach (var item in (await _DataStore.LoadAsync<BlacklistData>(DataKey)).Blacklist)
                 {
                     _Logger.LogInformation($"Added {item.Key} to the permission groups.");
                     _permissionRegistry.RegisterPermission(this, $"blacklist.group.{item.Key}", $"Permission to the {item.Key} blacklist group");
@@ -67,9 +67,15 @@ namespace OMItemRestrictions
             }
         }
 
-        protected override async Task OnUnloadAsync()
+        protected override Task OnUnloadAsync()
         {
             _Logger.LogInformation(_StringLocalizer["plugin_events:plugin_stop"]);
+            return Task.CompletedTask;
+        }
+
+        public void RegisterNewPermissionGroup(string name)
+        {
+            _permissionRegistry.RegisterPermission(this, $"blacklist.group.{name}", $"Permission to the {name} blacklist group");
         }
     }
 }
