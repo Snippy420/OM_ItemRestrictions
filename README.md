@@ -1,2 +1,1 @@
-Unfinished, 
-Not Compatible with the newest OpenMod Version
+Unfinished only works with picking up items off the ground
