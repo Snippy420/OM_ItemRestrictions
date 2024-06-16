@@ -3,9 +3,9 @@
 /blacklist remove "group" "itemID" | Alias: /bl r | Removes an item from the blacklist<br>
 /blacklist groups | Alias: /bl g | Lists all the current blacklist groups<br>
 
-**Permissions**
-OMItemRestrictions:commands.blacklist
-OMItemRestrictions:commands.blacklist.remove
-OMItemRestrictions:commands.blacklist.groups
+**Permissions**<br>
+OMItemRestrictions:commands.blacklist<br>
+OMItemRestrictions:commands.blacklist.remove<br>
+OMItemRestrictions:commands.blacklist.groups<br>
 
 OMItemRestrictions:blacklist.group."Group name is caps"
