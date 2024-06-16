@@ -25,7 +25,7 @@ namespace OMItemRestrictions.Commands
         {
             var groups = await _blacklistManager.BlacklistGroups();
 
-            if (groups == null) return;
+            if (groups.Count == 0) return;
 
             var groupsMessage = string.Join(", ", groups);
             await Context.Actor.PrintMessageAsync(groupsMessage);

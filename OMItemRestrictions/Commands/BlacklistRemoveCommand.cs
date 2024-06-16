@@ -31,14 +31,14 @@ namespace OMItemRestrictions.Commands
             var group = await Context.Parameters.GetAsync<string>(0);
             var item = await Context.Parameters.GetAsync<int>(1);
 
-            var error = _blacklistManager.RemoveBlacklist(group, item);
+            var error = await _blacklistManager.RemoveBlacklist(group, item);
 
-            if (error != null)
+            if (error != string.Empty)
             {
                 await uPlayer.PrintMessageAsync(error.ToString());
                 return;
             }
-            await uPlayer.PrintMessageAsync($"Removed id {item} from group {group}");
+            await uPlayer.PrintMessageAsync($"Removed ID {item} from group {group.ToUpper()}");
         }
     }
 }

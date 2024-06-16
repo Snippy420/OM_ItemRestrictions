@@ -68,9 +68,11 @@ namespace OMItemRestrictions.Managers
                 return $"Item not found for group '{group}'.";
             }
 
-            var list = blacklist.Blacklist[group];
-            list.Remove(item);
-            blacklist.Blacklist[group] = list;
+            blacklist.Blacklist[group].Remove(item);
+            if (blacklist.Blacklist[group].Count == 0)
+            {
+                blacklist.Blacklist.Remove(group);
+            }
 
             await _DataStore.SaveAsync(DataKey, blacklist);
             LoadBlacklistToMemory();
