@@ -8,4 +8,4 @@ OMItemRestrictions:commands.blacklist<br>
 OMItemRestrictions:commands.blacklist.remove<br>
 OMItemRestrictions:commands.blacklist.groups<br>
 
-OMItemRestrictions:blacklist.group."Group name is caps"
+OMItemRestrictions:blacklist.group."Group name is caps" | Example: OMItemRestrictions:blacklist.group.VIP
