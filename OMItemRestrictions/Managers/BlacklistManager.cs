@@ -98,5 +98,15 @@ namespace OMItemRestrictions.Managers
             var blacklist = await _DataStore.LoadAsync<BlacklistData>(DataKey);
             _Blacklist = blacklist.Blacklist;
         }
+
+        public Task<List<string>> BlacklistGroups()
+        {
+            var list = new List<string>();
+            foreach (var group in _Blacklist)
+            {
+                list.Add(group.Key);
+            }
+            return Task.FromResult(list);
+        }
     }
 }

@@ -40,6 +40,7 @@ namespace OMItemRestrictions.Commands
             var item = await Context.Parameters.GetAsync<int>(1);
 
             _blacklistManager.AddBlacklist(group, item);
+            await uPlayer.PrintMessageAsync($"Added id {item} to the group {group}");
         }
     }
 }

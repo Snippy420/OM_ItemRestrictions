@@ -13,5 +13,6 @@ namespace OMItemRestrictions.Services
         public Task<string> RemoveBlacklist(string group, int item);
         public void LoadBlacklistToMemory();
         public bool IsItemBlacklisted(int item, out string group);
+        public Task<List<string>> BlacklistGroups();
     }
 }

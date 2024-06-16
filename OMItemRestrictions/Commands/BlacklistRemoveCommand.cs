@@ -36,7 +36,9 @@ namespace OMItemRestrictions.Commands
             if (error != null)
             {
                 await uPlayer.PrintMessageAsync(error.ToString());
+                return;
             }
+            await uPlayer.PrintMessageAsync($"Removed id {item} from group {group}");
         }
     }
 }
