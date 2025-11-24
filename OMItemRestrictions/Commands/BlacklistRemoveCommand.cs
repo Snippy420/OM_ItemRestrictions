@@ -1,4 +1,5 @@
 ﻿using OMItemRestrictions.Services;
+using OpenMod.API.Commands;
 using OpenMod.API.Permissions;
 using OpenMod.Core.Commands;
 using OpenMod.Unturned.Users;
@@ -12,8 +13,8 @@ namespace OMItemRestrictions.Commands
     [Command("remove")]
     [CommandAlias("r")]
     [CommandParent(typeof(BlacklistCommand))]
-    [CommandDescription("Stuff")]
-    [CommandSyntax("<group> [item]")]
+    [CommandDescription("Removes an item from the selected groups blacklist")]
+    [CommandSyntax("<group> <item>")]
     public class BlacklistRemoveCommand : Command
     {
         private readonly IBlacklistManager _blacklistManager;
@@ -26,19 +27,15 @@ namespace OMItemRestrictions.Commands
 
         protected override async Task OnExecuteAsync()
         {
-            var uPlayer = Context.Actor as UnturnedUser;
-
+            if (Context.Parameters.Length != 2)
+                throw new CommandWrongUsageException(Context);
+            
             var group = await Context.Parameters.GetAsync<string>(0);
             var item = await Context.Parameters.GetAsync<int>(1);
 
-            var error = await _blacklistManager.RemoveBlacklist(group, item);
+            await _blacklistManager.RemoveBlacklist(group, item);
 
-            if (error != string.Empty)
-            {
-                await uPlayer.PrintMessageAsync(error.ToString());
-                return;
-            }
-            await uPlayer.PrintMessageAsync($"Removed ID {item} from group {group.ToUpper()}");
+            await PrintAsync($"Removed ID {item} from group {group.ToUpper()}");
         }
     }
 }

@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 // For more, visit https://openmod.github.io/openmod-docs/devdoc/guides/getting-started.html
 
-[assembly: PluginMetadata("OMItemRestrictions", DisplayName = "OM.ItemRestrictions")]
+[assembly: PluginMetadata("OMItemRestrictions", DisplayName = "OMItemRestrictions", Author = ".f.i.n.")]
 
 namespace OMItemRestrictions
 {

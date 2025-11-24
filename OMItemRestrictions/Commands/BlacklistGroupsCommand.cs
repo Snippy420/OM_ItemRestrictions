@@ -10,7 +10,7 @@ namespace OMItemRestrictions.Commands
     [Command("groups")]
     [CommandAlias("g")]
     [CommandParent(typeof(BlacklistCommand))]
-    [CommandDescription("Stuff")]
+    [CommandDescription("Lists all blacklist groups")]
     public class BlacklistGroupsCommand : Command
     {
         private readonly IBlacklistManager _blacklistManager;
@@ -28,7 +28,7 @@ namespace OMItemRestrictions.Commands
             if (groups.Count == 0) return;
 
             var groupsMessage = string.Join(", ", groups);
-            await Context.Actor.PrintMessageAsync(groupsMessage);
+            await PrintAsync(groupsMessage);
 
         }
     }

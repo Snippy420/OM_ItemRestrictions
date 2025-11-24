@@ -1,6 +1,4 @@
-# See https://openmod.github.io/openmod-docs/devdoc/concepts/localization.html
-# You can delete this file if you do not need translations
+GroupNotFound: "Group '{Group}' not found."
+ItemNotFound: "Item not found for group '{Group}'."
 
-plugin_events:
-  plugin_start: "Hello World"
-  plugin_stop: "Good bye :("
+ItemBlacklisted: "This item is blacklisted to group {Group}"

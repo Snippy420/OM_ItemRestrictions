@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Localization;
 
 namespace OMItemRestrictions.Events
 {
@@ -26,37 +27,37 @@ namespace OMItemRestrictions.Events
         private readonly IBlacklistManager _blacklistManager;
         private readonly IPermissionChecker _permissionChecker;
         private readonly IUserManager _userManager;
-        private readonly ILogger<OMItemRestrictions> _Logger;
+        private readonly ILogger<OMItemRestrictions> _logger;
+        private readonly IStringLocalizer _localizer;
+        
         public UnturnedPlayerTakingItemListener(
             IBlacklistManager blacklistManager,
             IPermissionChecker permissionChecker,
             IUserManager userManager,
-            ILogger<OMItemRestrictions> logger)
+            ILogger<OMItemRestrictions> logger, 
+            IStringLocalizer localizer)
         {
             _blacklistManager = blacklistManager;
             _permissionChecker = permissionChecker;
             _userManager = userManager;
-            _Logger = logger;
+            _logger = logger;
+            _localizer = localizer;
         }
         public async Task HandleEventAsync(object sender, UnturnedPlayerTakingItemEvent @event)
         {
             var pickupItem = @event.ItemData.item;
             var user = await _userManager.FindUserAsync(KnownActorTypes.Player, @event.Player.SteamId.ToString(), UserSearchMode.FindById);
 
-            if (!_blacklistManager.IsItemBlacklisted(pickupItem.id, out var group))
-            {
-                return;
-            }
+            if (!_blacklistManager.IsItemBlacklisted(pickupItem.id, out var group)) return;
 
-            _Logger.LogDebug(group);
-            _Logger.LogDebug(_permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}").Result.ToString());
+            _logger.LogDebug(group);
+            _logger.LogDebug(_permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}").Result.ToString());
 
-            if (await _permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}") != PermissionGrantResult.Grant)
-            {
-                @event.IsCancelled = true;
-                await @event.Player.PrintMessageAsync($"This item is blacklisted to group {group}", Color.Red);
-                return;
-            }
+            if (await _permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}") ==
+                PermissionGrantResult.Grant) return;
+            
+            @event.IsCancelled = true;
+            await @event.Player.PrintMessageAsync(_localizer["ItemBlacklisted", new { Group = group }], Color.Red);
         }
     }
 }

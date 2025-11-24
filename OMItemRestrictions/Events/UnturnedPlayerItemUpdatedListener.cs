@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Localization;
 
 namespace OMItemRestrictions.Events
 {
@@ -18,40 +19,39 @@ namespace OMItemRestrictions.Events
         private readonly IBlacklistManager _blacklistManager;
         private readonly IPermissionChecker _permissionChecker;
         private readonly IUserManager _userManager;
-        private readonly ILogger<OMItemRestrictions> _Logger;
+        private readonly ILogger<OMItemRestrictions> _logger;
+        private readonly IStringLocalizer _localizer;
+        
         public UnturnedPlayerItemUpdatedListener(
             IBlacklistManager blacklistManager,
             IPermissionChecker permissionChecker,
             IUserManager userManager,
-            ILogger<OMItemRestrictions> logger)
+            ILogger<OMItemRestrictions> logger, 
+            IStringLocalizer localizer)
         {
             _blacklistManager = blacklistManager;
             _permissionChecker = permissionChecker;
             _userManager = userManager;
-            _Logger = logger;
+            _logger = logger;
+            _localizer = localizer;
         }
         public async Task HandleEventAsync(object sender, UnturnedPlayerItemAddedEvent @event)
         {
             var itemJar = @event.ItemJar;
             var uPlayer = @event.Player;
 
-            if (!_blacklistManager.IsItemBlacklisted(itemJar.item.id, out var group))
-            {
-                return;
-            }
+            if (!_blacklistManager.IsItemBlacklisted(itemJar.item.id, out var group)) return;
 
             var user = await _userManager.FindUserAsync(KnownActorTypes.Player, @event.Player.SteamId.ToString(), UserSearchMode.FindById);
 
-            _Logger.LogDebug(group);
-            _Logger.LogDebug(_permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}").Result.ToString());
+            _logger.LogDebug(group);
+            _logger.LogDebug(_permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}").Result.ToString());
 
-            if (await _permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}") != PermissionGrantResult.Grant)
-            {
-                //uPlayer.Inventory.Inventory.sendDropItem(@event.Page, itemJar.x, itemJar.y);
-                uPlayer.Inventory.Inventory.removeItem(@event.Page, @event.Index);
-                await @event.Player.PrintMessageAsync($"This item is blacklisted to group {group}", Color.Red);
-                return;
-            }
+            if (await _permissionChecker.CheckPermissionAsync(user, $"blacklist.group.{group}") ==
+                PermissionGrantResult.Grant) return;
+            
+            uPlayer.Inventory.Inventory.removeItem(@event.Page, @event.Index);
+            await @event.Player.PrintMessageAsync(_localizer["ItemBlacklisted", new { Group = group }], Color.Red);
         }
     }
 }

@@ -14,8 +14,8 @@ namespace OMItemRestrictions.Commands
 {
     [Command("blacklist")]
     [CommandAlias("bl")]
-    [CommandDescription("Stuff")]
-    [CommandSyntax("<group> [item]")]
+    [CommandDescription("Adds specified item to the specified blacklist")]
+    [CommandSyntax("<group> <item>")]
     public class BlacklistCommand : Command
     {
         private readonly IBlacklistManager _blacklistManager;
@@ -28,19 +28,14 @@ namespace OMItemRestrictions.Commands
 
         protected override async Task OnExecuteAsync()
         {
-            var uPlayer = Context.Actor as UnturnedUser;
-
             if (Context.Parameters.Length != 2)
-            {
-                await uPlayer.PrintMessageAsync("Invalid syntax. Proper usage: /blacklist 'group' 'item id'", Color.Red);
-                return;
-            }
+                throw new CommandWrongUsageException(Context);
 
             var group = await Context.Parameters.GetAsync<string>(0);
             var item = await Context.Parameters.GetAsync<int>(1);
 
-            _blacklistManager.AddBlacklist(group, item);
-            await uPlayer.PrintMessageAsync($"Added ID {item} to the group {group.ToUpper()}");
+            await _blacklistManager.AddBlacklist(group, item);
+            await PrintAsync($"Added ID {item} to the group {group.ToUpper()}");
         }
     }
 }

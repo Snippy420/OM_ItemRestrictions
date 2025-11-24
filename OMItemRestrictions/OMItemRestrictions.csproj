@@ -9,9 +9,9 @@
     <GenerateNugetPackage>true</GenerateNugetPackage>
     <Product>OM.ItemRestrictions</Product>
     <NoWarn>$(NoWarn);NU1701;NU1702;CS0436</NoWarn>
-    <Version>0.0.1</Version>
-    <InformationalVersion>0.0.1</InformationalVersion>
-    <PackageVersion>0.0.1</PackageVersion>
+    <Version>1.0.0</Version>
+    <InformationalVersion>1.0.0</InformationalVersion>
+    <PackageVersion>1.0.0</PackageVersion>
 	<LangVersion>latest</LangVersion>
   </PropertyGroup>
 

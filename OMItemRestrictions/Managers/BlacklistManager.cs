@@ -7,36 +7,42 @@ using OpenMod.API.Permissions;
 using OpenMod.API.Persistence;
 using OpenMod.API.Plugins;
 using OpenMod.API.Prioritization;
-using OpenMod.Core.Plugins;
-using OpenMod.Unturned.Users;
-using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using Microsoft.Extensions.Localization;
+using OpenMod.API.Commands;
 
 namespace OMItemRestrictions.Managers
 {
     [PluginServiceImplementation(Lifetime = ServiceLifetime.Singleton, Priority = Priority.Normal)]
     public class BlacklistManager : IBlacklistManager
     {
-        private readonly IDataStore _DataStore;
+        private readonly IDataStore _dataStore;
+        private readonly ILogger<OMItemRestrictions> _logger;
+        private readonly IPermissionRegistry _permissionRegistry;
+        private readonly IPluginAccessor<OMItemRestrictions> _pluginAccessor;
+        private readonly IStringLocalizer _localizer;
+
+        private Dictionary<string, List<int>> _blacklist = new();
+        
         private const string DataKey = "itemBlacklist";
-        public Dictionary<string, List<int>> _Blacklist;
-        private readonly ILogger<OMItemRestrictions> _Logger;
-        private readonly IPermissionRegistry _PermissionRegistry;
-        private readonly IPluginAccessor<OMItemRestrictions> _PluginAccessor;
-        public BlacklistManager(IDataStore dataStore, ILogger<OMItemRestrictions> logger, IPermissionRegistry permissionRegistry, IPluginAccessor<OMItemRestrictions> pluginAccessor) 
+        
+        public BlacklistManager(IDataStore dataStore, 
+            ILogger<OMItemRestrictions> logger, 
+            IPermissionRegistry permissionRegistry, 
+            IPluginAccessor<OMItemRestrictions> pluginAccessor, 
+            IStringLocalizer localizer) 
         { 
-            _DataStore = dataStore;
-            _Blacklist = new Dictionary<string, List<int>>();
-            _Logger = logger;
-            _PermissionRegistry = permissionRegistry;
-            _PluginAccessor = pluginAccessor;
+            _dataStore = dataStore;
+            _logger = logger;
+            _permissionRegistry = permissionRegistry;
+            _pluginAccessor = pluginAccessor;
+            _localizer = localizer;
         }
 
-        public async void AddBlacklist(string group, int item)
+        public async UniTask AddBlacklist(string group, int item)
         {
-            var blacklist = await _DataStore.LoadAsync<BlacklistData>(DataKey);
+            var blacklist = await _dataStore.LoadAsync<BlacklistData>(DataKey);
             group = group.ToUpper();
 
             if (blacklist.Blacklist.ContainsKey(group))
@@ -45,28 +51,23 @@ namespace OMItemRestrictions.Managers
             }
             else
             {
-                _PluginAccessor.Instance.RegisterNewPermissionGroup(group);
+                _pluginAccessor.Instance.RegisterNewPermissionGroup(group);
                 blacklist.Blacklist.Add(group, new List<int> { item });
             }
-            await _DataStore.SaveAsync(DataKey, blacklist);
-            LoadBlacklistToMemory();
-
+            await _dataStore.SaveAsync(DataKey, blacklist);
+            await LoadBlacklistToMemory();
 
         }
 
-        public async Task<string> RemoveBlacklist(string group, int item)
+        public async UniTask RemoveBlacklist(string group, int item)
         {
-            var blacklist = await _DataStore.LoadAsync<BlacklistData>(DataKey);
+            var blacklist = await _dataStore.LoadAsync<BlacklistData>(DataKey);
             group = group.ToUpper();
 
             if (!blacklist.Blacklist.ContainsKey(group))
-            {
-                return $"Group '{group}' not found.";
-            }
+                throw new UserFriendlyException(_localizer["GroupNotFound", new { Group = group }]);
             if (!blacklist.Blacklist[group].Contains(item))
-            {
-                return $"Item not found for group '{group}'.";
-            }
+                throw new UserFriendlyException(_localizer["ItemNotFound", new { Group = group }]);
 
             blacklist.Blacklist[group].Remove(item);
             if (blacklist.Blacklist[group].Count == 0)
@@ -74,41 +75,39 @@ namespace OMItemRestrictions.Managers
                 blacklist.Blacklist.Remove(group);
             }
 
-            await _DataStore.SaveAsync(DataKey, blacklist);
-            LoadBlacklistToMemory();
-            return string.Empty;
+            await _dataStore.SaveAsync(DataKey, blacklist);
+            await LoadBlacklistToMemory();
         }
 
         public bool IsItemBlacklisted(int item, out string group)
         {
-            foreach ( var dicts in _Blacklist )
+            foreach ( var dicts in _blacklist )
             {
                 var list = dicts.Value;
 
-                if (list.Contains(item))
-                {
-                    group = dicts.Key.ToUpper();
-                    return true;
-                }
+                if (!list.Contains(item)) continue;
+                
+                group = dicts.Key.ToUpper();
+                return true;
             }
             group = null;
             return false;
         }
 
-        public async void LoadBlacklistToMemory()
+        public async UniTask LoadBlacklistToMemory()
         {
-            var blacklist = await _DataStore.LoadAsync<BlacklistData>(DataKey);
-            _Blacklist = blacklist.Blacklist;
+            var blacklist = await _dataStore.LoadAsync<BlacklistData>(DataKey);
+            _blacklist = blacklist.Blacklist;
         }
 
-        public Task<List<string>> BlacklistGroups()
+        public UniTask<List<string>> BlacklistGroups()
         {
             var list = new List<string>();
-            foreach (var group in _Blacklist)
+            foreach (var group in _blacklist)
             {
                 list.Add(group.Key);
             }
-            return Task.FromResult(list);
+            return UniTask.FromResult(list);
         }
     }
 }
